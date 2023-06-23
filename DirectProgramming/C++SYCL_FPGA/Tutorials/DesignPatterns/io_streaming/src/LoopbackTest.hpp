@@ -12,7 +12,7 @@
 // SideChannelTest.hpp which will check for the presence of this macro.
 #define USE_REAL_IO_PIPES
 //#define OUTER_LOOP_COUNT 512
-#define OUTER_LOOP_COUNT 1 
+#define OUTER_LOOP_COUNT 10 
 #define INNER_LOOP_COUNT 2048 
 
 using namespace sycl;
