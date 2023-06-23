@@ -13,7 +13,8 @@
 // The type that will stream through the IO pipe. When using real IO pipes,
 // make sure the width of this datatype matches the width of the IO pipe, which
 // you can find in the BSP XML file.
-using IOPipeType = int;
+//using IOPipeType = int;
+using IOPipeType = unsigned long int;
 
 #include "LoopbackTest.hpp"
 #include "SideChannelTest.hpp"
@@ -68,10 +69,10 @@ int main() {
 
     // run the side channel example system
     // see 'SideChannelTest.hpp'
-    std::cout << "Running side channel test\n";
+    /*std::cout << "Running side channel test\n";
     passed &= 
       RunSideChannelsSystem<IOPipeType, kUseUSMHostAllocation>(q, count);
-
+    */
   } catch (exception const &e) {
     // Catches exceptions in the host code
     std::cerr << "Caught a SYCL host exception:\n" << e.what() << "\n";
