@@ -10,7 +10,10 @@
 // To use this, ensure you have a BSP that supports IO pipes.
 // NOTE: define this BEFORE including the LoopbackTest.hpp and
 // SideChannelTest.hpp which will check for the presence of this macro.
-//#define USE_REAL_IO_PIPES
+#define USE_REAL_IO_PIPES
+//#define OUTER_LOOP_COUNT 512
+#define OUTER_LOOP_COUNT 10 
+#define INNER_LOOP_COUNT 2048 
 
 using namespace sycl;
 
@@ -29,14 +32,45 @@ struct LoopBackWriteIOPipeID { static constexpr unsigned id = 1; };
 // full system is done below in the 'RunLoopbackSystem' function.
 //
 template<class IOPipeIn, class IOPipeOut>
-event SubmitLoopbackKernel(queue& q, size_t count) {
-  return q.single_task<LoopBackMainKernel>([=] {
-    for (size_t i = 0; i < count; i++) {
-      auto data = IOPipeIn::read();
-      // !!! Your processing can go here !!!
-      IOPipeOut::write(data);
+event SubmitLoopbackKernel(queue& q, size_t count, bool& passed) {
+//void SubmitLoopbackKernel(queue& q, size_t count) {
+ std::cout << "inside SubmitLoopbackKernel \n"; 
+  unsigned long int *datain_host = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  for(size_t count = 0; count < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); count++){
+    datain_host[count] = count;
+  }
+  unsigned long int *dataout_host = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+
+  buffer<unsigned long int, 1> buf_in(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+
+  event kevent = q.submit([&] (handler& h) {
+    auto in = buf_in.get_access<access::mode::read_write>(h);
+    auto out = buf_out.get_access<access::mode::read_write>(h);
+
+    h.single_task<LoopBackMainKernel>([=] {
+    for(size_t outer_loop_count = 0 ; outer_loop_count < OUTER_LOOP_COUNT; outer_loop_count++) { 
+      for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
+        IOPipeOut::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+      }
+      for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
+        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn::read();
+      }
     }
   });
+  });
+  buf_out.get_access<access::mode::read>();
+  for (size_t i = 0; i < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); i++) {
+    if (dataout_host[i] != datain_host[i]) {
+      std::cerr << "ERROR: output mismatch at entry " << i << ": "
+                << dataout_host[i] << " != " << datain_host[i]
+                << " (out != in)\n";
+      passed &= false;
+    }
+  }
+ std::cout << "passed = " << passed << "\n"; 
+return kevent;
+
 }
 
 //
@@ -68,7 +102,7 @@ bool RunLoopbackSystem(queue& q, size_t count) {
                                    T, kIOPipeDepth>;
   using WriteIOPipe =
     ext::intel::kernel_writeable_io_pipe<LoopBackWriteIOPipeID,
-                                    T, kIOPipeDepth>;
+                                   T, kIOPipeDepth>;
 #endif
   //////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +116,7 @@ bool RunLoopbackSystem(queue& q, size_t count) {
 #endif
 
   // submit the main processing kernel
-  auto kernel_event = SubmitLoopbackKernel<ReadIOPipe, WriteIOPipe>(q, count);
+  auto kernel_event = SubmitLoopbackKernel<ReadIOPipe, WriteIOPipe>(q, count, passed);
 
   // FAKE IO PIPES ONLY
 #ifndef USE_REAL_IO_PIPES
@@ -105,6 +139,7 @@ bool RunLoopbackSystem(queue& q, size_t count) {
   // data it expects to process ('count'). In general, this may not be the
   // case and you may want the processing kernel to run 'forever' (or until the
   // host tells it to stop). For an example of this, see 'SideChannelTest.hpp'.
+
   kernel_event.wait();
 
   // FAKE IO PIPES ONLY
@@ -121,6 +156,18 @@ bool RunLoopbackSystem(queue& q, size_t count) {
       passed &= false;
     }
   }
+/*#else
+  for (size_t i = 0; i < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); i++) {
+    if (dataout_host[i] != datain_host[i]) {
+      std::cerr << "ERROR: output mismatch at entry " << i << ": "
+                << dataout_host[i] << " != " << datain_host[i]
+                << " (out != in)\n";
+      passed &= false;
+    }
+  }
+  
+  return passed;
+*/
 #endif
 
   return passed;

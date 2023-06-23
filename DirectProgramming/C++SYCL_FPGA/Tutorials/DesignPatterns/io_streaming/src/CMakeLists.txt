@@ -6,7 +6,7 @@ set(FPGA_TARGET ${TARGET_NAME}.fpga)
 
 # FPGA board selection
 if(NOT DEFINED FPGA_DEVICE)
-    set(FPGA_DEVICE "Agilex7")
+    set(FPGA_DEVICE "Agilex")
     message(STATUS "FPGA_DEVICE was not specified.\
                     \nConfiguring the design to the default FPGA family: ${FPGA_DEVICE}\
                     \nPlease refer to the README for information on target selection.")
@@ -29,7 +29,7 @@ if(WIN32)
     set(WIN_FLAG "/EHsc")
 endif()
 
-# Use USM host allocations if the BSP supports them or if we target an FPGA part
+# Use USM host allocations if the BSP supports them or if we target an FPGA part 
 if((IS_BSP STREQUAL "0") OR FPGA_DEVICE MATCHES ".usm.*")
   set(USM_HOST_ALLOCATIONS "-DUSM_HOST_ALLOCATIONS")
   message(STATUS "USM host allocations are enabled")
@@ -104,3 +104,10 @@ set_target_properties(${FPGA_TARGET} PROPERTIES COMPILE_FLAGS "${HARDWARE_COMPIL
 set_target_properties(${FPGA_TARGET} PROPERTIES LINK_FLAGS "${HARDWARE_LINK_FLAGS} -reuse-exe=${CMAKE_BINARY_DIR}/${FPGA_TARGET}")
 # The -reuse-exe flag enables rapid recompilation of host-only code changes.
 # See C++SYCL_FPGA/GettingStarted/fast_recompile for details.
+target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/linux64/lib/libintel_opae_mmd.so)
+target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/linux64/lib/libMPF.so)
+target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae/install/lib64/libopae-c.so)
+target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/json-c/install/lib64/libjson-c.so)
+target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae-sim/install/lib64/libopae-c-ase.so)
+target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae-sim/install/lib64/libase.so)
+
