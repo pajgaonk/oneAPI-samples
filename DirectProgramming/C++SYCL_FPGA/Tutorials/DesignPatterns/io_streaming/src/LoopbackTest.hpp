@@ -102,6 +102,7 @@ bool RunLoopbackSystem(queue& q, size_t count) {
                                    T, kIOPipeDepth>;
   using WriteIOPipe =
     ext::intel::kernel_writeable_io_pipe<LoopBackWriteIOPipeID,
+                                   T, kIOPipeDepth>;
 #endif
   //////////////////////////////////////////////////////////////////////////////
 
