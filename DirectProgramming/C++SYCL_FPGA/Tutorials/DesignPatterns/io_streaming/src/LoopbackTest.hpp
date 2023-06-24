@@ -51,10 +51,10 @@ event SubmitLoopbackKernel(queue& q, size_t count, bool& passed) {
     h.single_task<LoopBackMainKernel>([=] {
     for(size_t outer_loop_count = 0 ; outer_loop_count < OUTER_LOOP_COUNT; outer_loop_count++) { 
       for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
-        IOPipeOut::write(in[outer_loop_count*OUTER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
       }
       for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
-        out[outer_loop_count*OUTER_LOOP_COUNT + inner_loop_count] = IOPipeIn::read();
+        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn::read();
       }
     }
   });
