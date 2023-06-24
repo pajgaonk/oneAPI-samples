@@ -14,13 +14,23 @@
 //#define OUTER_LOOP_COUNT 512
 #define OUTER_LOOP_COUNT 10 
 #define INNER_LOOP_COUNT 2048 
+#define PIPE_COUNT 4 
 
 using namespace sycl;
 
 // declare the kernel and pipe ID stucts globally to reduce name mangling
 struct LoopBackMainKernel;
 struct LoopBackReadIOPipeID { static constexpr unsigned id = 0; };
-struct LoopBackWriteIOPipeID { static constexpr unsigned id = 1; };
+struct LoopBackReadIOPipeID_1 { static constexpr unsigned id = 1; };
+struct LoopBackReadIOPipeID_2 { static constexpr unsigned id = 2; };
+struct LoopBackReadIOPipeID_3 { static constexpr unsigned id = 3; };
+struct LoopBackReadIOPipeID_4 { static constexpr unsigned id = 4; };
+
+struct LoopBackWriteIOPipeID_0 { static constexpr unsigned id = 5; };
+struct LoopBackWriteIOPipeID_1 { static constexpr unsigned id = 6; };
+struct LoopBackWriteIOPipeID_2 { static constexpr unsigned id = 7; };
+struct LoopBackWriteIOPipeID_3 { static constexpr unsigned id = 8; };
+struct LoopBackWriteIOPipeID_4 { static constexpr unsigned id = 9; };
 
 
 //
@@ -31,43 +41,107 @@ struct LoopBackWriteIOPipeID { static constexpr unsigned id = 1; };
 // stitching together the whole system. In this tutorial, the stitching of the
 // full system is done below in the 'RunLoopbackSystem' function.
 //
-template<class IOPipeIn, class IOPipeOut>
+template<class IOPipeIn_1, class IOPipeIn_2, class IOPipeIn_3, class IOPipeIn_4, class IOPipeOut_1, class IOPipeOut_2, class IOPipeOut_3, class IOPipeOut_4>
 event SubmitLoopbackKernel(queue& q, size_t count, bool& passed) {
 //void SubmitLoopbackKernel(queue& q, size_t count) {
  std::cout << "inside SubmitLoopbackKernel \n"; 
-  unsigned long int *datain_host = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
-  for(size_t count = 0; count < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); count++){
-    datain_host[count] = count;
-  }
-  unsigned long int *dataout_host = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  unsigned long int *datain_host_0 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  unsigned long int *datain_host_1 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  unsigned long int *datain_host_2 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  unsigned long int *datain_host_3 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  //for(int pipe_count = 0; pipe_count < PIPE_COUNT; pipe_count++){
+    for(size_t count = 0; count < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); count++){
+      datain_host_0[count] = count;
+      datain_host_1[count] = count;
+      datain_host_2[count] = count;
+      datain_host_3[count] = count;
+    }
+  //}
+  unsigned long int *dataout_host_0 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  unsigned long int *dataout_host_1 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  unsigned long int *dataout_host_2 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
+  unsigned long int *dataout_host_3 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
 
-  buffer<unsigned long int, 1> buf_in(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
-  buffer<unsigned long int, 1> buf_out(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_0(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_1(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_2(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_3(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+
+  buffer<unsigned long int, 1> buf_out_0(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out_1(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out_2(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out_3(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
 
   event kevent = q.submit([&] (handler& h) {
-    auto in = buf_in.get_access<access::mode::read_write>(h);
-    auto out = buf_out.get_access<access::mode::read_write>(h);
+    auto in_0 = buf_in_0.get_access<access::mode::read_write>(h);
+    auto in_1 = buf_in_1.get_access<access::mode::read_write>(h);
+    auto in_2 = buf_in_2.get_access<access::mode::read_write>(h);
+    auto in_3 = buf_in_3.get_access<access::mode::read_write>(h);
+
+    auto out_0 = buf_out_0.get_access<access::mode::read_write>(h);
+    auto out_1 = buf_out_1.get_access<access::mode::read_write>(h);
+    auto out_2 = buf_out_2.get_access<access::mode::read_write>(h);
+    auto out_3 = buf_out_3.get_access<access::mode::read_write>(h);
 
     h.single_task<LoopBackMainKernel>([=] {
     for(size_t outer_loop_count = 0 ; outer_loop_count < OUTER_LOOP_COUNT; outer_loop_count++) { 
       for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
-        IOPipeOut::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_1::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_2::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_3::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_4::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
       }
       for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
-        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn::read();
+        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_1::read();
+        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_2::read();
+        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_3::read();
+        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_4::read();
       }
     }
   });
   });
-  buf_out.get_access<access::mode::read>();
+
+  buf_out_0.get_access<access::mode::read>();
+  buf_out_1.get_access<access::mode::read>();
+  buf_out_2.get_access<access::mode::read>();
+  buf_out_3.get_access<access::mode::read>();
+
   for (size_t i = 0; i < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); i++) {
-    if (dataout_host[i] != datain_host[i]) {
-      std::cerr << "ERROR: output mismatch at entry " << i << ": "
-                << dataout_host[i] << " != " << datain_host[i]
+    if (dataout_host_0[i] != datain_host_0[i]) {
+      std::cerr << "ERROR: output mismatch in dataout_host_0 at entry " << i << ": "
+                << dataout_host_0[i] << " != " << datain_host_0[i]
                 << " (out != in)\n";
       passed &= false;
     }
   }
+
+  for (size_t i = 0; i < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); i++) {
+    if (dataout_host_1[i] != datain_host_1[i]) {
+      std::cerr << "ERROR: output mismatch in dataout_host_1 at entry " << i << ": "
+                << dataout_host_1[i] << " != " << datain_host_1[i]
+                << " (out != in)\n";
+      passed &= false;
+    }
+  }
+
+  for (size_t i = 0; i < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); i++) {
+    if (dataout_host_2[i] != datain_host_2[i]) {
+      std::cerr << "ERROR: output mismatch in dataout_host_2 at entry " << i << ": "
+                << dataout_host_2[i] << " != " << datain_host_2[i]
+                << " (out != in)\n";
+      passed &= false;
+    }
+  }
+
+  for (size_t i = 0; i < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); i++) {
+    if (dataout_host_3[i] != datain_host_3[i]) {
+      std::cerr << "ERROR: output mismatch in dataout_host_3 at entry " << i << ": "
+                << dataout_host_3[i] << " != " << datain_host_3[i]
+                << " (out != in)\n";
+      passed &= false;
+    }
+  }
+  
  std::cout << "passed = " << passed << "\n"; 
 return kevent;
 
@@ -97,11 +171,30 @@ bool RunLoopbackSystem(queue& q, size_t count) {
   FakeIOPipeOutConsumer::Init(q, count);
 #else
   // these are REAL IO pipes
-  using ReadIOPipe = 
-    ext::intel::kernel_readable_io_pipe<LoopBackReadIOPipeID,
+  using ReadIOPipe_1 = 
+    ext::intel::kernel_readable_io_pipe<LoopBackReadIOPipeID_1,
                                    T, kIOPipeDepth>;
-  using WriteIOPipe =
-    ext::intel::kernel_writeable_io_pipe<LoopBackWriteIOPipeID,
+  using ReadIOPipe_2 = 
+    ext::intel::kernel_readable_io_pipe<LoopBackReadIOPipeID_2,
+                                   T, kIOPipeDepth>;
+  using ReadIOPipe_3 = 
+    ext::intel::kernel_readable_io_pipe<LoopBackReadIOPipeID_3,
+                                   T, kIOPipeDepth>;
+  using ReadIOPipe_4 = 
+    ext::intel::kernel_readable_io_pipe<LoopBackReadIOPipeID_4,
+                                   T, kIOPipeDepth>;
+
+  using WriteIOPipe_1 =
+    ext::intel::kernel_writeable_io_pipe<LoopBackWriteIOPipeID_1,
+                                   T, kIOPipeDepth>;
+  using WriteIOPipe_2 =
+    ext::intel::kernel_writeable_io_pipe<LoopBackWriteIOPipeID_2,
+                                   T, kIOPipeDepth>;
+  using WriteIOPipe_3 =
+    ext::intel::kernel_writeable_io_pipe<LoopBackWriteIOPipeID_3,
+                                   T, kIOPipeDepth>;
+  using WriteIOPipe_4 =
+    ext::intel::kernel_writeable_io_pipe<LoopBackWriteIOPipeID_4,
                                    T, kIOPipeDepth>;
 #endif
   //////////////////////////////////////////////////////////////////////////////
@@ -116,7 +209,8 @@ bool RunLoopbackSystem(queue& q, size_t count) {
 #endif
 
   // submit the main processing kernel
-  auto kernel_event = SubmitLoopbackKernel<ReadIOPipe, WriteIOPipe>(q, count, passed);
+  auto kernel_event = SubmitLoopbackKernel<ReadIOPipe_1, ReadIOPipe_2, ReadIOPipe_3, ReadIOPipe_4,
+                                           WriteIOPipe_1, WriteIOPipe_2, WriteIOPipe_3, WriteIOPipe_4>(q, count, passed);
 
   // FAKE IO PIPES ONLY
 #ifndef USE_REAL_IO_PIPES
