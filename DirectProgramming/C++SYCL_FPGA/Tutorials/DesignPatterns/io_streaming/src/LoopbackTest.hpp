@@ -12,25 +12,27 @@
 // SideChannelTest.hpp which will check for the presence of this macro.
 #define USE_REAL_IO_PIPES
 //#define OUTER_LOOP_COUNT 512
-#define OUTER_LOOP_COUNT 10 
-#define INNER_LOOP_COUNT 2048 
-#define PIPE_COUNT 4 
+//#define OUTER_LOOP_COUNT 10 
+#define OUTER_LOOP_COUNT 1 
+//#define INNER_LOOP_COUNT 2048 
+#define INNER_LOOP_COUNT 128 
+//#define PIPE_COUNT 4 
 
 using namespace sycl;
 
 // declare the kernel and pipe ID stucts globally to reduce name mangling
 struct LoopBackMainKernel;
-struct LoopBackReadIOPipeID { static constexpr unsigned id = 0; };
+//struct LoopBackReadIOPipeID { static constexpr unsigned id = 0; };
 struct LoopBackReadIOPipeID_1 { static constexpr unsigned id = 1; };
-struct LoopBackReadIOPipeID_2 { static constexpr unsigned id = 2; };
-struct LoopBackReadIOPipeID_3 { static constexpr unsigned id = 3; };
-struct LoopBackReadIOPipeID_4 { static constexpr unsigned id = 4; };
+struct LoopBackReadIOPipeID_2 { static constexpr unsigned id = 3; };
+struct LoopBackReadIOPipeID_3 { static constexpr unsigned id = 5; };
+struct LoopBackReadIOPipeID_4 { static constexpr unsigned id = 7; };
 
-struct LoopBackWriteIOPipeID_0 { static constexpr unsigned id = 5; };
-struct LoopBackWriteIOPipeID_1 { static constexpr unsigned id = 6; };
-struct LoopBackWriteIOPipeID_2 { static constexpr unsigned id = 7; };
-struct LoopBackWriteIOPipeID_3 { static constexpr unsigned id = 8; };
-struct LoopBackWriteIOPipeID_4 { static constexpr unsigned id = 9; };
+//struct LoopBackWriteIOPipeID_0 { static constexpr unsigned id = 5; };
+struct LoopBackWriteIOPipeID_1 { static constexpr unsigned id = 0; };
+struct LoopBackWriteIOPipeID_2 { static constexpr unsigned id = 2; };
+struct LoopBackWriteIOPipeID_3 { static constexpr unsigned id = 4; };
+struct LoopBackWriteIOPipeID_4 { static constexpr unsigned id = 6; };
 
 
 //
@@ -62,15 +64,15 @@ event SubmitLoopbackKernel(queue& q, size_t count, bool& passed) {
   unsigned long int *dataout_host_2 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
   unsigned long int *dataout_host_3 = (unsigned long int *)malloc(OUTER_LOOP_COUNT * INNER_LOOP_COUNT * sizeof(unsigned long int));
 
-  buffer<unsigned long int, 1> buf_in_0(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
-  buffer<unsigned long int, 1> buf_in_1(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
-  buffer<unsigned long int, 1> buf_in_2(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
-  buffer<unsigned long int, 1> buf_in_3(datain_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_0(datain_host_0, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_1(datain_host_1, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_2(datain_host_2, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_in_3(datain_host_3, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
 
-  buffer<unsigned long int, 1> buf_out_0(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
-  buffer<unsigned long int, 1> buf_out_1(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
-  buffer<unsigned long int, 1> buf_out_2(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
-  buffer<unsigned long int, 1> buf_out_3(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out_0(dataout_host_0, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out_1(dataout_host_1, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out_2(dataout_host_2, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
+  buffer<unsigned long int, 1> buf_out_3(dataout_host_3, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
 
   event kevent = q.submit([&] (handler& h) {
     auto in_0 = buf_in_0.get_access<access::mode::read_write>(h);
@@ -86,16 +88,16 @@ event SubmitLoopbackKernel(queue& q, size_t count, bool& passed) {
     h.single_task<LoopBackMainKernel>([=] {
     for(size_t outer_loop_count = 0 ; outer_loop_count < OUTER_LOOP_COUNT; outer_loop_count++) { 
       for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
-        IOPipeOut_1::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
-        IOPipeOut_2::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
-        IOPipeOut_3::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
-        IOPipeOut_4::write(in[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_1::write(in_0[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_2::write(in_1[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_3::write(in_2[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
+        IOPipeOut_4::write(in_3[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count]);
       }
       for (size_t inner_loop_count = 0; inner_loop_count < INNER_LOOP_COUNT ; inner_loop_count++) {
-        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_1::read();
-        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_2::read();
-        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_3::read();
-        out[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_4::read();
+        out_0[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_1::read();
+        out_1[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_2::read();
+        out_2[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_3::read();
+        out_3[outer_loop_count*INNER_LOOP_COUNT + inner_loop_count] = IOPipeIn_4::read();
       }
     }
   });
