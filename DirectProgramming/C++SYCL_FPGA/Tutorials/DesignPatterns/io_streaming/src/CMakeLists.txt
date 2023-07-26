@@ -108,6 +108,6 @@ target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/linux64/lib/libi
 target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/linux64/lib/libMPF.so)
 target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae/install/lib64/libopae-c.so)
 target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/json-c/install/lib64/libjson-c.so)
-target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae-sim/install/lib64/libopae-c-ase.so)
-target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae-sim/install/lib64/libase.so)
+#target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae-sim/install/lib64/libopae-c-ase.so)
+#target_link_libraries(${FPGA_TARGET} ${AOCL_BOARD_PACKAGE_ROOT}/build/opae-sim/install/lib64/libase.so)
 
