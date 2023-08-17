@@ -45,10 +45,10 @@ event SubmitLoopbackKernel(queue& q, size_t count, bool& passed) {
   buffer<unsigned long int, 1> buf_out(dataout_host, range<1>(OUTER_LOOP_COUNT * INNER_LOOP_COUNT ));
 
   event kevent = q.submit([&] (handler& h) {
-    auto in = buf_in.get_host_access(h);
+    auto in = buf_in.get_access(h);
     //auto in = buf_in.get_access<access::mode::read_write>(h);
 
-    auto out = buf_out.get_host_access(h);
+    auto out = buf_out.get_access(h);
     //auto out = buf_out.get_access<access::mode::read_write>(h);
 
 
@@ -63,7 +63,7 @@ event SubmitLoopbackKernel(queue& q, size_t count, bool& passed) {
     }
   });
   });
-  buf_out.get_host_access();
+  buf_out.get_access();
   //buf_out.get_access<access::mode::read>();
   for (size_t i = 0; i < (OUTER_LOOP_COUNT*INNER_LOOP_COUNT); i++) {
     if (dataout_host[i] != datain_host[i]) {
